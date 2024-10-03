@@ -10,6 +10,7 @@ import (
 
 	"github.com/bww/go-ident/v1"
 	"github.com/bww/go-util/v1/debug"
+	errutil "github.com/bww/go-util/v1/errors"
 	"github.com/getsentry/sentry-go"
 )
 
@@ -109,6 +110,8 @@ func (a *Alerter) Errorf(f string, args ...interface{}) {
 }
 
 func (a *Alerter) Error(err error, opts ...Option) {
+	ref := errutil.Refstr(err)
+
 	var h *sentry.Hub
 	if a.Sentry != nil {
 		h = sentry.CurrentHub().Clone()
@@ -116,6 +119,9 @@ func (a *Alerter) Error(err error, opts ...Option) {
 	var log *slog.Logger
 	if a.Verbose && a.Logger != nil {
 		log = a.Logger.With("alert", "error")
+		if ref != "" {
+			log = log.With("ref", ref)
+		}
 	}
 
 	var cxt Context
@@ -141,6 +147,9 @@ func (a *Alerter) Error(err error, opts ...Option) {
 			s := h.Scope()
 			for k, v := range tags {
 				s.SetTag(k, fmt.Sprint(v))
+			}
+			if ref != "" {
+				s.SetTag("ref", ref)
 			}
 		}
 		if log != nil {

@@ -5,7 +5,7 @@ go 1.22.3
 require (
 	github.com/bww/go-ident v0.1.0
 	github.com/bww/go-router v1.9.0
-	github.com/bww/go-util v1.33.0
+	github.com/bww/go-util v1.43.0
 	github.com/getsentry/sentry-go v0.28.0
 )
 
