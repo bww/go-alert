@@ -48,6 +48,10 @@ func Init(conf Config) {
 	}
 }
 
+func Default() *Alerter {
+	return shared
+}
+
 func Errorf(f string, args ...interface{}) {
 	lock.Lock()
 	defer lock.Unlock()
@@ -65,12 +69,12 @@ func Error(err error, opts ...Option) {
 }
 
 type Alerter struct {
-	Sentry    *sentry.Client
-	Logger    *slog.Logger
-	Channel   ident.Ident
-	Component string
-	Hostname  string
-	Verbose   bool
+	sentry    *sentry.Client
+	log       *slog.Logger
+	channel   ident.Ident
+	component string
+	hostname  string
+	verbose   bool
 }
 
 func New(conf Config) (*Alerter, error) {
@@ -96,12 +100,12 @@ func New(conf Config) (*Alerter, error) {
 	}
 
 	return &Alerter{
-		Sentry:    conf.Sentry,
-		Logger:    conf.Logger,
-		Channel:   conf.Channel,
-		Component: conf.Component,
-		Hostname:  conf.Hostname,
-		Verbose:   conf.Verbose,
+		sentry:    conf.Sentry,
+		log:       conf.Logger,
+		channel:   conf.Channel,
+		component: conf.Component,
+		hostname:  conf.Hostname,
+		verbose:   conf.Verbose,
 	}, nil
 }
 
@@ -113,12 +117,12 @@ func (a *Alerter) Error(err error, opts ...Option) {
 	ref := errutil.Refstr(err)
 
 	var h *sentry.Hub
-	if a.Sentry != nil {
+	if a.sentry != nil {
 		h = sentry.CurrentHub().Clone()
 	}
 	var log *slog.Logger
-	if a.Verbose && a.Logger != nil {
-		log = a.Logger.With("alert", "error")
+	if a.verbose && a.log != nil {
+		log = a.log.With("alert", "error")
 		if ref != "" {
 			log = log.With("ref", ref)
 		}
@@ -170,7 +174,7 @@ func (a *Alerter) Error(err error, opts ...Option) {
 	if h != nil {
 		a.captureError(h, err, cxt.Extra)
 	}
-	if log != nil && a.Verbose {
+	if log != nil && a.verbose {
 		log.Error(err.Error())
 	}
 }

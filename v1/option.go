@@ -1,7 +1,7 @@
 package alert
 
 import (
-	"github.com/bww/go-router/v1"
+	"github.com/bww/go-router/v2"
 )
 
 type Option func(c Context) Context
